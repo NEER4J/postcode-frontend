@@ -76,7 +76,7 @@ export default function Dashboard() {
 
   const generateApiKey = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/generate-key', {
+      const response = await fetch('http://product-soft.webuildtrades.com/post-code-lookup/api/generate-key', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

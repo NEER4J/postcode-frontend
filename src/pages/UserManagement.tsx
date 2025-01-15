@@ -3,7 +3,7 @@ import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid';
 
 interface User {
   id: string;
-  full_name: string;
+  name: string;
   email: string;
   new_api_key: string;
   rate_limit: number;
@@ -28,7 +28,7 @@ const UserManagement: React.FC = () => {
   const [showApiKey, setShowApiKey] = useState<{ [key: string]: boolean }>({});
   const [updateMessage, setUpdateMessage] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://product-soft.webuildtrades.com/post-code-lookup';
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -123,7 +123,7 @@ const UserManagement: React.FC = () => {
                   <tr key={user.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-gray-900">{user.full_name}</span>
+                        <span className="text-sm font-medium text-gray-900">{user.name}</span>
                         <span className="text-sm text-gray-500">{user.email}</span>
                       </div>
                     </td>

@@ -77,7 +77,7 @@ export default function Documentation() {
                     <h4 className="font-medium mb-2">JavaScript/Node.js:</h4>
                     <pre className="bg-gray-800 text-white p-3 rounded overflow-x-auto">
 {`const response = await fetch(
-  'http://localhost:5000/api/postcodes/SW1A1AA',
+  'http://product-soft.webuildtrades.com/post-code-lookup/api/postcodes/SW1A1AA',
   {
     headers: {
       'Authorization': 'Bearer your_api_key_here'
@@ -98,7 +98,7 @@ headers = {
 }
 
 response = requests.get(
-    'http://localhost:5000/api/postcodes/SW1A1AA',
+    'http://product-soft.webuildtrades.com/post-code-lookup/api/postcodes/SW1A1AA',
     headers=headers
 )
 data = response.json()`}
