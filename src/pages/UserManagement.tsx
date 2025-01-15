@@ -28,7 +28,7 @@ const UserManagement: React.FC = () => {
   const [showApiKey, setShowApiKey] = useState<{ [key: string]: boolean }>({});
   const [updateMessage, setUpdateMessage] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://product-soft.webuildtrades.com/post-code-lookup';
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://product-soft.webuildtrades.com/post-code-lookup';
 
   useEffect(() => {
     const fetchUsers = async () => {

@@ -106,7 +106,7 @@ const PostcodeSearch: FC<PostcodeSearchProps> = ({ apiKey = 'demo_key', onApiUsa
     clearMarkers();
 
     try {
-      const response = await fetch(`http://product-soft.webuildtrades.com/post-code-lookup/api/postcodes/${encodeURIComponent(postcode)}`, {
+      const response = await fetch(`https://product-soft.webuildtrades.com/post-code-lookup/api/postcodes/${encodeURIComponent(postcode)}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
