@@ -31,6 +31,9 @@ export default function Navbar() {
             <Link to="/documentation" className="text-gray-600 hover:text-gray-900">
               Documentation
             </Link>
+            <Link to="/userManagement" className="text-gray-600 hover:text-gray-900">
+              User Management
+            </Link>
             
             {user ? (
               <>
