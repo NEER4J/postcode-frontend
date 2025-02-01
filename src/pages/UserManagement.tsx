@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface User {
   id: string;
@@ -27,39 +29,49 @@ const UserManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showApiKey, setShowApiKey] = useState<{ [key: string]: boolean }>({});
   const [updateMessage, setUpdateMessage] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const { isAdmin, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://product-soft.webuildtrades.com/post-code-lookup';
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch(`${backendUrl}/api/users`);
-        const data = await response.json();
-        setUsers(data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        setLoading(false);
-      }
-    };
+    // Check if user is admin after auth loading is complete
+    if (!authLoading && !isAdmin) {
+      navigate('/dashboard');
+      return;
+    }
 
-    fetchUsers();
-  }, [backendUrl]);
+    // Only fetch users if user is admin
+    if (!authLoading && isAdmin) {
+      fetchUsers();
+    }
+  }, [authLoading, isAdmin, navigate]);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch(`${backendUrl}/api/users`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
+      }
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const updateRateLimit = async (userId: string, rateLimit: number) => {
     try {
-      console.log('Updating rate limit:', { userId, rateLimit });
-      
       const response = await fetch(`${backendUrl}/api/users/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ rateLimit }), // Using rateLimit as in original code
+        body: JSON.stringify({ rateLimit }),
       });
 
-      console.log('Response status:', response.status);
-      
       if (response.ok) {
         setUsers(users.map(user => 
           user.id === userId ? { ...user, rate_limit: rateLimit } : user
@@ -75,7 +87,6 @@ const UserManagement: React.FC = () => {
       setUpdateMessage({ type: 'error', message: 'Error updating rate limit' });
     }
 
-    // Clear message after 3 seconds
     setTimeout(() => setUpdateMessage(null), 3000);
   };
 
@@ -86,12 +97,18 @@ const UserManagement: React.FC = () => {
     }));
   };
 
-  if (loading) {
+  // Show loading state while checking auth or fetching data
+  if (authLoading || loading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
     );
+  }
+
+  // If not admin, render nothing (redirect will happen via useEffect)
+  if (!isAdmin) {
+    return null;
   }
 
   return (

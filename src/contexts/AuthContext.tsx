@@ -1,11 +1,21 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+
+interface UserProfile {
+  id: string;
+  role: string;
+  email: string;
+  full_name: string;
+}
 
 interface AuthContextType {
   user: User | null;
+  userProfile: UserProfile | null;
   loading: boolean;
+  isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -15,20 +25,53 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
-      setLoading(false);
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      } else {
+        setLoading(false);
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      } else {
+        setUserProfile(null);
+        setIsAdmin(false);
+        setLoading(false);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+
+      setUserProfile(profile);
+      setIsAdmin(profile.role === 'admin');
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      toast.error('Failed to fetch user profile');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -52,6 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               id: authData.user.id,
               email,
               full_name: fullName,
+              role: 'user', // Default role for new users
             }
           ])
           .select()
@@ -59,7 +103,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (profileError) {
           console.error('Profile creation error:', profileError);
-          // Attempt to delete the auth user if profile creation fails
           await supabase.auth.admin.deleteUser(authData.user.id);
           throw new Error('Failed to create user profile');
         }
@@ -76,7 +119,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      userProfile, 
+      loading, 
+      isAdmin, 
+      signIn, 
+      signUp, 
+      signOut 
+    }}>
       {children}
     </AuthContext.Provider>
   );

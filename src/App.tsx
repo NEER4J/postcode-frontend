@@ -31,6 +31,14 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route 
+            path="/admin/users" 
+            element={
+              <ProtectedRoute requireAdmin>
+                <UserManagement />
+              </ProtectedRoute>
+            } 
+          />
           </Routes>
           <Toaster position="top-right" />
         </div>

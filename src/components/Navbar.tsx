@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 export default function Navbar() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -31,9 +31,13 @@ export default function Navbar() {
             <Link to="/documentation" className="text-gray-600 hover:text-gray-900">
               Documentation
             </Link>
-            <Link to="/userManagement" className="text-gray-600 hover:text-gray-900">
-              User Management
-            </Link>
+            
+            {/* Only show User Management link if user is admin */}
+            {isAdmin && (
+              <Link to="/userManagement" className="text-gray-600 hover:text-gray-900">
+                User Management
+              </Link>
+            )}
             
             {user ? (
               <>
