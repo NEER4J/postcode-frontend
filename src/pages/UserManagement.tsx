@@ -14,13 +14,76 @@ interface User {
 }
 
 const Alert = ({ message, type }: { message: string; type: 'success' | 'error' }) => (
-  <div
-    className={`px-4 py-3 rounded-lg ${
-      type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 
-      'bg-red-50 text-red-800 border border-red-200'
-    }`}
-  >
-    {message}
+  <div className={`fixed top-4 right-4 z-50 transform transition-transform duration-300 ease-out ${
+    message ? 'translate-y-0' : '-translate-y-full'
+  }`}>
+    <div className={`px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 ${
+      type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+    }`}>
+      <span className="text-sm font-medium">{message}</span>
+    </div>
+  </div>
+);
+
+const UserCard = ({ user, showApiKey, onToggleApiKey, onUpdateRateLimit }) => (
+  <div className="bg-white rounded-xl shadow-sm p-6 transition-all duration-200 hover:shadow-md border border-gray-100">
+    <div className="flex justify-between items-start mb-4">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">{user.name}</h3>
+        <p className="text-sm text-gray-500">{user.email}</p>
+      </div>
+      <div className="flex items-center space-x-2 bg-gray-50 px-3 py-1 rounded-full">
+        <span className="text-sm text-gray-600">{user.request_count}</span>
+        <span className="text-xs text-gray-400">requests</span>
+      </div>
+    </div>
+
+    <div className="space-y-4">
+      <div className="flex flex-col space-y-2">
+        <label className="text-sm font-medium text-gray-600">API Key</label>
+        <div className="flex items-center space-x-2">
+          <code className="flex-1 text-sm bg-gray-50 px-3 py-2 rounded-lg font-mono truncate">
+            {showApiKey[user.id] ? user.new_api_key : '••••••••••••'}
+          </code>
+          <button
+            onClick={() => onToggleApiKey(user.id)}
+            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50"
+          >
+            {showApiKey[user.id] ? (
+              <EyeSlashIcon className="h-5 w-5" />
+            ) : (
+              <EyeIcon className="h-5 w-5" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-col space-y-2">
+        <label className="text-sm font-medium text-gray-600">Rate Limit</label>
+        <div className="flex items-center space-x-2">
+          <input
+            type="number"
+            value={user.rate_limit}
+            onChange={(e) => onUpdateRateLimit(user.id, parseInt(e.target.value) || 0, false)}
+            min="0"
+            className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+          <button
+            onClick={() => onUpdateRateLimit(user.id, user.rate_limit, true)}
+            className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+          >
+            Update
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-col space-y-1">
+        <label className="text-sm font-medium text-gray-600">Last Request</label>
+        <span className="text-sm text-gray-500">
+          {new Date(user.last_request_time).toLocaleString()}
+        </span>
+      </div>
+    </div>
   </div>
 );
 
@@ -35,13 +98,11 @@ const UserManagement: React.FC = () => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://product-soft.webuildtrades.com/post-code-lookup';
 
   useEffect(() => {
-    // Check if user is admin after auth loading is complete
     if (!authLoading && !isAdmin) {
       navigate('/dashboard');
       return;
     }
 
-    // Only fetch users if user is admin
     if (!authLoading && isAdmin) {
       fetchUsers();
     }
@@ -50,9 +111,7 @@ const UserManagement: React.FC = () => {
   const fetchUsers = async () => {
     try {
       const response = await fetch(`${backendUrl}/api/users`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch users');
-      }
+      if (!response.ok) throw new Error('Failed to fetch users');
       const data = await response.json();
       setUsers(data);
     } catch (error) {
@@ -62,13 +121,18 @@ const UserManagement: React.FC = () => {
     }
   };
 
-  const updateRateLimit = async (userId: string, rateLimit: number) => {
+  const updateRateLimit = async (userId: string, rateLimit: number, shouldUpdate: boolean = true) => {
+    if (!shouldUpdate) {
+      setUsers(users.map(user => 
+        user.id === userId ? { ...user, rate_limit: rateLimit } : user
+      ));
+      return;
+    }
+
     try {
       const response = await fetch(`${backendUrl}/api/users/${userId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rateLimit }),
       });
 
@@ -97,105 +161,44 @@ const UserManagement: React.FC = () => {
     }));
   };
 
-  // Show loading state while checking auth or fetching data
   if (authLoading || loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      <div className="flex justify-center items-center min-h-screen bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
       </div>
     );
   }
 
-  // If not admin, render nothing (redirect will happen via useEffect)
-  if (!isAdmin) {
-    return null;
-  }
+  if (!isAdmin) return null;
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50 py-8 mt-16">
+      {updateMessage && <Alert message={updateMessage.message} type={updateMessage.type} />}
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-semibold text-gray-900">User Management</h1>
-          {updateMessage && (
-            <div className="w-96">
-              <Alert message={updateMessage.message} type={updateMessage.type} />
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
+            <p className="mt-1 text-sm text-gray-500">Manage user API access and rate limits</p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-100">
+              <span className="text-sm text-gray-500">Total Users:</span>
+              <span className="ml-2 text-lg font-semibold text-gray-900">{users.length}</span>
             </div>
-          )}
+          </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Info</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">API Key</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate Limit</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usage</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Request</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
-                {users.map(user => (
-                  <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-gray-900">{user.name}</span>
-                        <span className="text-sm text-gray-500">{user.email}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2">
-                        <code className="text-sm bg-gray-50 px-2 py-1 rounded font-mono">
-                          {showApiKey[user.id] ? user.new_api_key : '••••••••••••'}
-                        </code>
-                        <button
-                          onClick={() => toggleApiKeyVisibility(user.id)}
-                          className="text-gray-400 hover:text-gray-600"
-                        >
-                          {showApiKey[user.id] ? (
-                            <EyeSlashIcon className="h-4 w-4" />
-                          ) : (
-                            <EyeIcon className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="number"
-                          value={user.rate_limit}
-                          onChange={e => {
-                            const newValue = parseInt(e.target.value) || 0;
-                            setUsers(users.map(u => 
-                              u.id === user.id ? { ...u, rate_limit: newValue } : u
-                            ));
-                          }}
-                          min="0"
-                          className="w-20 px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        <button
-                          onClick={() => updateRateLimit(user.id, user.rate_limit)}
-                          className="px-3 py-1 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                        >
-                          Update
-                        </button>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-gray-900">{user.request_count} requests</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-gray-900">
-                        {new Date(user.last_request_time).toLocaleString()}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {users.map(user => (
+            <UserCard
+              key={user.id}
+              user={user}
+              showApiKey={showApiKey}
+              onToggleApiKey={toggleApiKeyVisibility}
+              onUpdateRateLimit={updateRateLimit}
+            />
+          ))}
         </div>
       </div>
     </div>

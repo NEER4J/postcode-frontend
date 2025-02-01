@@ -10,6 +10,7 @@ import UserManagement from './pages/UserManagement';
 import Documentation from './pages/Documentation';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import Footer from './components/Footer';
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
             } 
           />
           </Routes>
+          <Footer />
           <Toaster position="top-right" />
         </div>
       </BrowserRouter>
