@@ -236,40 +236,41 @@ export default function Dashboard() {
                 </div>
 
                 <div className="border-t border-gray-100 pt-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <Key className="text-gray-400" size={20} />
-                      <div>
-                        <div className="text-sm text-gray-600">API Key</div>
-                        <div className="font-mono bg-gray-50 px-3 py-1.5 rounded-lg text-sm">
-                          {showApiKey ? profile.new_api_key : '•'.repeat(40)}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setShowApiKey(!showApiKey)}
-                        className="p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100"
-                        title={showApiKey ? "Hide API Key" : "Show API Key"}
-                      >
-                        {showApiKey ? "Hide" : "Show"}
-                      </button>
-                      <button
-                        onClick={copyApiKey}
-                        className="p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100"
-                        title="Copy API Key"
-                      >
-                        <Copy size={20} />
-                      </button>
-                      <button
-                        onClick={generateApiKey}
-                        className="p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100"
-                        title="Regenerate API Key"
-                      >
-                        <RefreshCw size={20} />
-                      </button>
-                    </div>
-                  </div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0 mb-4 p-4 bg-white rounded-lg border border-gray-100">
+  <div className="flex items-start sm:items-center gap-3">
+    <Key className="text-gray-400 mt-1 sm:mt-0" size={20} />
+    <div className="min-w-0 flex-1">
+      <div className="text-sm text-gray-600 mb-1">API Key</div>
+      <div className="font-mono bg-gray-50 px-3 py-1.5 rounded-lg text-sm overflow-x-auto whitespace-nowrap">
+        {showApiKey ? profile.new_api_key : '•'.repeat(40)}
+      </div>
+    </div>
+  </div>
+  
+  <div className="flex items-center gap-2 mt-3 sm:mt-0 border-t sm:border-t-0 pt-3 sm:pt-0">
+    <button
+      onClick={() => setShowApiKey(!showApiKey)}
+      className="flex-1 sm:flex-none px-3 py-2 text-sm text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors"
+      title={showApiKey ? "Hide API Key" : "Show API Key"}
+    >
+      {showApiKey ? "Hide" : "Show"}
+    </button>
+    <button
+      onClick={copyApiKey}
+      className="flex-1 sm:flex-none px-3 py-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors"
+      title="Copy API Key"
+    >
+      <Copy size={20} className="mx-auto" />
+    </button>
+    <button
+      onClick={generateApiKey}
+      className="flex-1 sm:flex-none px-3 py-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors"
+      title="Regenerate API Key"
+    >
+      <RefreshCw size={20} className="mx-auto" />
+    </button>
+  </div>
+</div>
                 </div>
 
                 <div className="border-t border-gray-100 pt-6">
