@@ -5,11 +5,13 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import PostcodeSearch from '../components/PostcodeSearch';
+import DomainManagement from '../components/DomainManagement';
 
 interface Profile {
   new_api_key: string;
   email: string;
   full_name: string;
+  allowed_domains?: string[];
 }
 
 interface ApiUsage {
@@ -90,7 +92,6 @@ export default function Dashboard() {
 
       const { apiKey } = await response.json();
 
-      // Update the profile with the new API key
       const { error } = await supabase
         .from('profiles')
         .update({ new_api_key: apiKey })
@@ -172,30 +173,39 @@ export default function Dashboard() {
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4">Your Profile</h2>
           {profile && (
-            <div className="space-y-4">
-              <p><span className="font-medium">Name:</span> {profile.full_name}</p>
-              <p><span className="font-medium">Email:</span> {profile.email}</p>
-              <div className="flex items-center gap-4">
-                <div className="flex-1">
-                  <span className="font-medium">API Key:</span>
-                  <code className="ml-2 p-1 bg-gray-100 rounded">
-                    {profile.new_api_key}
-                  </code>
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <p><span className="font-medium">Name:</span> {profile.full_name}</p>
+                <p><span className="font-medium">Email:</span> {profile.email}</p>
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <span className="font-medium">API Key:</span>
+                    <code className="ml-2 p-1 bg-gray-100 rounded">
+                      {profile.new_api_key}
+                    </code>
+                  </div>
+                  <button
+                    onClick={copyApiKey}
+                    className="p-2 text-gray-600 hover:text-gray-900"
+                    title="Copy API Key"
+                  >
+                    <Copy size={20} />
+                  </button>
+                  <button
+                    onClick={generateApiKey}
+                    className="p-2 text-gray-600 hover:text-gray-900"
+                    title="Regenerate API Key"
+                  >
+                    <RefreshCw size={20} />
+                  </button>
                 </div>
-                <button
-                  onClick={copyApiKey}
-                  className="p-2 text-gray-600 hover:text-gray-900"
-                  title="Copy API Key"
-                >
-                  <Copy size={20} />
-                </button>
-                <button
-                  onClick={generateApiKey}
-                  className="p-2 text-gray-600 hover:text-gray-900"
-                  title="Regenerate API Key"
-                >
-                  <RefreshCw size={20} />
-                </button>
+              </div>
+
+              <div className="pt-6 border-t">
+                <DomainManagement
+                  profile={profile}
+                  onUpdate={fetchProfile}
+                />
               </div>
             </div>
           )}
