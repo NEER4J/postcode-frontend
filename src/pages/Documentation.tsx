@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Code, Terminal, Key, Clock, AlertCircle, ChevronRight } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
+// TabButton and CodeBlock components remain the same...
 const TabButton = ({ active, children, onClick }) => (
   <button
     onClick={onClick}
@@ -36,7 +37,7 @@ export default function Documentation() {
 
   return (
     <div className="min-h-screen bg-gray-50 mt-10">
-            <Helmet>
+      <Helmet>
         <title>Documentation - PostCode API</title>
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -53,7 +54,7 @@ export default function Documentation() {
             </p>
           </div>
 
-          {/* Authentication Section */}
+          {/* Authentication Section - remains the same... */}
           <section className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
             <div className="flex items-center gap-3 mb-6">
               <Key className="text-blue-600" size={24} />
@@ -79,11 +80,12 @@ export default function Documentation() {
               <h2 className="text-2xl font-semibold">Endpoints</h2>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-8">
+              {/* GET Postcode Lookup */}
               <div>
-                <h3 className="text-lg font-medium mb-2">Postcode Lookup</h3>
+                <h3 className="text-lg font-medium mb-2">1. Postcode Lookup</h3>
                 <p className="text-gray-600 mb-4">
-                  Retrieve detailed information about a UK postcode including nearby establishments.
+                  Retrieve both Google Places establishments and residential addresses for a UK postcode.
                 </p>
 
                 <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 mb-4">
@@ -101,15 +103,73 @@ export default function Documentation() {
   "SearchEnd": {
     "Summaries": [
       {
-        "Id": "12345",
-        "StreetAddress": "10 Downing Street",
-        "Town": "Westminster",
-        "Postcode": "SW1A 1AA",
-        "Address": "10 Downing Street, Westminster, London SW1A 1AA",
-        "Longitude": -0.1276248,
-        "Latitude": 51.5033635
+        "Id": "gp_ChIJx-3-UfCWcEgRkv5LTOysqn0",
+        "Type": "google_place",
+        "BuildingNumber": "Theory Recruitment",
+        "StreetAddress": "19 Hereward Rise",
+        "Town": "Dudley",
+        "Postcode": "B62 8AN",
+        "Address": "19 Hereward Rise, Halesowen, B62 8AN"
+      },
+      {
+        "Id": "e04b386f-738f-4194-a1ea-d7f3898d7f28",
+        "Type": "residential",
+        "BuildingNumber": "We Build Trades Office ff1",
+        "StreetAddress": "19 Hereward Rise",
+        "Town": "Halesowen",
+        "Postcode": "B628AN",
+        "Address": "We Build Trades Office ff1 19 Hereward Rise, B628AN",
+        "CreatedAt": "2025-02-03T11:57:50.5177+00:00"
       }
     ]
+  }
+}`}
+                    </CodeBlock>
+                  </div>
+                </div>
+              </div>
+
+              {/* POST Residential Address */}
+              <div>
+                <h3 className="text-lg font-medium mb-2">2. Add Residential Address</h3>
+                <p className="text-gray-600 mb-4">
+                  Add a new residential address to the database for a specific postcode.
+                </p>
+
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 mb-4">
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-sm font-medium">POST</span>
+                    <code>/post-code-lookup/api/residential-address</code>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Request Format:</h4>
+                    <CodeBlock language="json">
+{`{
+  "postcode": "B628AN",
+  "buildingNumber": "We Build Trades Office ff1",
+  "streetAddress": "19 Hereward Rise",
+  "town": "Halesowen",
+  "fullAddress": "We Build Trades Office ff1 19 Hereward Rise, B628AN"
+}`}
+                    </CodeBlock>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-2">Response Format:</h4>
+                    <CodeBlock language="json">
+{`{
+  "address": {
+    "id": "e04b386f-738f-4194-a1ea-d7f3898d7f28",
+    "type": "residential",
+    "buildingNumber": "We Build Trades Office ff1",
+    "streetAddress": "19 Hereward Rise",
+    "town": "Halesowen",
+    "postcode": "B628AN",
+    "fullAddress": "We Build Trades Office ff1 19 Hereward Rise, B628AN",
+    "createdAt": "2025-02-03T11:57:50.5177+00:00"
   }
 }`}
                     </CodeBlock>
@@ -149,10 +209,13 @@ export default function Documentation() {
               </div>
 
               {activeTab === 'javascript' && (
-                <CodeBlock language="javascript">
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="font-medium mb-2">Get Addresses:</h4>
+                    <CodeBlock language="javascript">
 {`// Using fetch
 const apiKey = 'your_api_key_here';
-const postcode = 'SW1A1AA';
+const postcode = 'B628AN';
 
 const response = await fetch(
   \`https://product-soft.webuildtrades.com/post-code-lookup/api/postcodes/\${postcode}\`,
@@ -165,15 +228,45 @@ const response = await fetch(
 );
 
 const data = await response.json();`}
-                </CodeBlock>
+                    </CodeBlock>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-2">Add Residential Address:</h4>
+                    <CodeBlock language="javascript">
+{`const response = await fetch(
+  'https://product-soft.webuildtrades.com/post-code-lookup/api/residential-address',
+  {
+    method: 'POST',
+    headers: {
+      'Authorization': \`Bearer \${apiKey}\`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      postcode: 'B628AN',
+      buildingNumber: 'We Build Trades Office ff1',
+      streetAddress: '19 Hereward Rise',
+      town: 'Halesowen',
+      fullAddress: 'We Build Trades Office ff1 19 Hereward Rise, B628AN'
+    })
+  }
+);
+
+const data = await response.json();`}
+                    </CodeBlock>
+                  </div>
+                </div>
               )}
 
               {activeTab === 'python' && (
-                <CodeBlock language="python">
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="font-medium mb-2">Get Addresses:</h4>
+                    <CodeBlock language="python">
 {`import requests
 
 api_key = 'your_api_key_here'
-postcode = 'SW1A1AA'
+postcode = 'B628AN'
 
 headers = {
     'Authorization': f'Bearer {api_key}',
@@ -186,64 +279,62 @@ response = requests.get(
 )
 
 data = response.json()`}
-                </CodeBlock>
+                    </CodeBlock>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-2">Add Residential Address:</h4>
+                    <CodeBlock language="python">
+{`payload = {
+    'postcode': 'B628AN',
+    'buildingNumber': 'We Build Trades Office ff1',
+    'streetAddress': '19 Hereward Rise',
+    'town': 'Halesowen',
+    'fullAddress': 'We Build Trades Office ff1 19 Hereward Rise, B628AN'
+}
+
+response = requests.post(
+    'https://product-soft.webuildtrades.com/post-code-lookup/api/residential-address',
+    headers=headers,
+    json=payload
+)
+
+data = response.json()`}
+                    </CodeBlock>
+                  </div>
+                </div>
               )}
 
               {activeTab === 'curl' && (
-                <CodeBlock language="bash">
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="font-medium mb-2">Get Addresses:</h4>
+                    <CodeBlock language="bash">
 {`curl -X GET \\
-  'https://product-soft.webuildtrades.com/post-code-lookup/api/postcodes/SW1A1AA' \\
+  'https://product-soft.webuildtrades.com/post-code-lookup/api/postcodes/B628AN' \\
   -H 'Authorization: Bearer your_api_key_here' \\
   -H 'Content-Type: application/json'`}
-                </CodeBlock>
+                    </CodeBlock>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-2">Add Residential Address:</h4>
+                    <CodeBlock language="bash">
+{`curl -X POST \\
+  'https://product-soft.webuildtrades.com/post-code-lookup/api/residential-address' \\
+  -H 'Authorization: Bearer your_api_key_here' \\
+  -H 'Content-Type: application/json' \\
+  -d '{
+    "postcode": "B628AN",
+    "buildingNumber": "We Build Trades Office ff1",
+    "streetAddress": "19 Hereward Rise",
+    "town": "Halesowen",
+    "fullAddress": "We Build Trades Office ff1 19 Hereward Rise, B628AN"
+  }'`}
+                    </CodeBlock>
+                  </div>
+                </div>
               )}
-            </div>
-          </section>
-
-          {/* Rate Limits Section */}
-          <section className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 hidden">
-            <div className="flex items-center gap-3 mb-6">
-              <Clock className="text-blue-600" size={24} />
-              <h2 className="text-2xl font-semibold">Rate Limits</h2>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-blue-50 rounded-lg p-6 border border-blue-100">
-                <h3 className="text-lg font-medium text-blue-900 mb-2">Free Tier</h3>
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-2 text-blue-700">
-                    <ChevronRight size={16} />
-                    <span>5 requests per 15 minutes</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-blue-700">
-                    <ChevronRight size={16} />
-                    <span>Requires demo API key</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="bg-purple-50 rounded-lg p-6 border border-purple-100">
-                <h3 className="text-lg font-medium text-purple-900 mb-2">Premium Tier</h3>
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-2 text-purple-700">
-                    <ChevronRight size={16} />
-                    <span>100 requests per day</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-purple-700">
-                    <ChevronRight size={16} />
-                    <span>Custom API key provided</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="mt-6 bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-              <div className="flex gap-2">
-                <AlertCircle className="text-yellow-600 flex-shrink-0" size={20} />
-                <p className="text-yellow-700">
-                  For higher rate limits or custom plans, please contact our support team.
-                </p>
-              </div>
             </div>
           </section>
         </div>

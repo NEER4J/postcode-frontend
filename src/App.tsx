@@ -8,6 +8,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ApiUsageGraph from './pages/ApiUsageGraph';
 import UserManagement from './pages/UserManagement';
+import ResidentialAddresses from './pages/ResidentialAddresses';
 import Documentation from './pages/Documentation';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -28,6 +29,7 @@ function App() {
             <Route path="/documentation" element={<Documentation />} />
             <Route path="/UserManagement" element={<UserManagement />} />
             <Route path="/ApiUsage" element={<ApiUsageGraph />} />
+            <Route path="/addAddress" element={<ResidentialAddresses />} />
             <Route
               path="/dashboard"
               element={
