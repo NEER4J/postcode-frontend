@@ -14,7 +14,27 @@ interface User {
   last_request_time: string;
 }
 
-const Alert = ({ message, type }: { message: string; type: 'success' | 'error' }) => (
+interface AlertProps {
+  message: string;
+  type: 'success' | 'error';
+}
+
+interface DeleteModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  userName: string;
+}
+
+interface UserCardProps {
+  user: User;
+  showApiKey: { [key: string]: boolean };
+  onToggleApiKey: (userId: string) => void;
+  onUpdateRateLimit: (userId: string, rateLimit: number, shouldUpdate: boolean) => void;
+  onDeleteUser: (user: User) => void;
+}
+
+const Alert: React.FC<AlertProps> = ({ message, type }) => (
   <div className={`fixed top-4 right-4 z-50 transform transition-transform duration-300 ease-out ${
     message ? 'translate-y-0' : '-translate-y-full'
   }`}>
@@ -26,13 +46,36 @@ const Alert = ({ message, type }: { message: string; type: 'success' | 'error' }
   </div>
 );
 
-const UserCard = ({ user, showApiKey, onToggleApiKey, onUpdateRateLimit }) => (
+const DeleteConfirmationModal: React.FC<DeleteModalProps> = ({ isOpen, onClose, onConfirm, userName }) => (
+  <div className={`fixed inset-0 z-50 ${isOpen ? 'block' : 'hidden'}`}>
+    <div className="fixed inset-0 bg-black bg-opacity-50"></div>
+    <div className="fixed inset-0 flex items-center justify-center">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Confirm Delete</h3>
+        <p className="text-sm text-gray-600 mb-6">
+          Are you sure you want to delete {userName}? This action cannot be undone and will remove all associated data.
+        </p>
+        <div className="flex justify-end space-x-4">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const UserCard: React.FC<UserCardProps> = ({ user, showApiKey, onToggleApiKey, onUpdateRateLimit, onDeleteUser }) => (
   <div className="bg-white rounded-xl shadow-sm p-6 transition-all duration-200 hover:shadow-md border border-gray-100">
-          <Helmet>
-        <title>User Management - PostCode API</title>
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-      </Helmet>
     <div className="flex justify-between items-start mb-4">
       <div>
         <h3 className="text-lg font-semibold text-gray-900">{user.name}</h3>
@@ -89,6 +132,15 @@ const UserCard = ({ user, showApiKey, onToggleApiKey, onUpdateRateLimit }) => (
           {new Date(user.last_request_time).toLocaleString()}
         </span>
       </div>
+
+      <div className="mt-4 pt-4 border-t border-gray-100">
+        <button
+          onClick={() => onDeleteUser(user)}
+          className="w-full px-4 py-2 text-sm text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200"
+        >
+          Delete User
+        </button>
+      </div>
     </div>
   </div>
 );
@@ -98,6 +150,10 @@ const UserManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showApiKey, setShowApiKey] = useState<{ [key: string]: boolean }>({});
   const [updateMessage, setUpdateMessage] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; user: User | null }>({
+    isOpen: false,
+    user: null,
+  });
   const { isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -167,6 +223,29 @@ const UserManagement: React.FC = () => {
     }));
   };
 
+  const handleDeleteUser = async () => {
+    if (!deleteModal.user) return;
+
+    try {
+      const response = await fetch(`${backendUrl}/api/users/${deleteModal.user.id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setUsers(users.filter(u => u.id !== deleteModal.user?.id));
+        setUpdateMessage({ type: 'success', message: 'User deleted successfully!' });
+      } else {
+        setUpdateMessage({ type: 'error', message: 'Failed to delete user' });
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      setUpdateMessage({ type: 'error', message: 'Error deleting user' });
+    }
+
+    setDeleteModal({ isOpen: false, user: null });
+    setTimeout(() => setUpdateMessage(null), 3000);
+  };
+
   if (authLoading || loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-50">
@@ -179,8 +258,21 @@ const UserManagement: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 mt-16">
+      <Helmet>
+        <title>User Management - PostCode API</title>
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+      </Helmet>
+
       {updateMessage && <Alert message={updateMessage.message} type={updateMessage.type} />}
       
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, user: null })}
+        onConfirm={handleDeleteUser}
+        userName={deleteModal.user?.name || ''}
+      />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -203,6 +295,7 @@ const UserManagement: React.FC = () => {
               showApiKey={showApiKey}
               onToggleApiKey={toggleApiKeyVisibility}
               onUpdateRateLimit={updateRateLimit}
+              onDeleteUser={(user) => setDeleteModal({ isOpen: true, user })}
             />
           ))}
         </div>
