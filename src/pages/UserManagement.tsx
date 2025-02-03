@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 
 interface User {
   id: string;
@@ -27,6 +28,11 @@ const Alert = ({ message, type }: { message: string; type: 'success' | 'error' }
 
 const UserCard = ({ user, showApiKey, onToggleApiKey, onUpdateRateLimit }) => (
   <div className="bg-white rounded-xl shadow-sm p-6 transition-all duration-200 hover:shadow-md border border-gray-100">
+          <Helmet>
+        <title>User Management - PostCode API</title>
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+      </Helmet>
     <div className="flex justify-between items-start mb-4">
       <div>
         <h3 className="text-lg font-semibold text-gray-900">{user.name}</h3>

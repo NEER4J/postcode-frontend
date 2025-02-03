@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
-  MapPin, 
+  Rocket, 
   Menu, 
   X, 
   ChevronDown, 
@@ -88,11 +88,11 @@ export default function Navbar() {
               to="/" 
               className="flex items-center gap-2 group"
             >
-              <MapPin 
+              <Rocket 
                 className="text-blue-600 transition-transform group-hover:scale-110" 
                 size={24} 
               />
-              <span className="font-semibold text-gray-900">UK Postcode Lookup</span>
+              <span className="font-semibold text-gray-900">PostCode API</span>
             </Link>
 
             {/* Desktop Navigation */}

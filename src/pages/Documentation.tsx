@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Code, Terminal, Key, Clock, AlertCircle, ChevronRight } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 const TabButton = ({ active, children, onClick }) => (
   <button
@@ -35,6 +36,11 @@ export default function Documentation() {
 
   return (
     <div className="min-h-screen bg-gray-50 mt-10">
+            <Helmet>
+        <title>Documentation - PostCode API</title>
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+      </Helmet>
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto space-y-12">
           {/* Header */}

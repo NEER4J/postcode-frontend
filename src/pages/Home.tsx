@@ -1,4 +1,5 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { 
   MapPin, 
   Rocket, 
@@ -36,7 +37,15 @@ const StatCard = ({ number, label }) => (
 
 export default function Home() {
   return (
+    
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      <Helmet>
+        <title>PostCode API - Fast & Reliable UK Address Lookup</title>
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <meta name="description" content="Lightning-fast UK postcode lookup with integrated mapping and location data. Built for developers and businesses." />
+      </Helmet>
       {/* Hero Section */}
       <div className="container mx-auto px-4 pt-20 pb-32">
         <div className="max-w-7xl mx-auto">

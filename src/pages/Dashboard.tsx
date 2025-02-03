@@ -17,6 +17,7 @@ import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import PostcodeSearch from '../components/PostcodeSearch';
 import DomainManagement from '../components/DomainManagement';
+import { Helmet } from 'react-helmet-async';
 
 interface Profile {
   new_api_key: string;
@@ -184,6 +185,11 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+      <Helmet>
+        <title>Dashboard - PostCode API</title>
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+      </Helmet>
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Header */}

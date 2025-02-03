@@ -11,6 +11,7 @@ import Documentation from './pages/Documentation';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Footer from './components/Footer';
+import { HelmetProvider } from 'react-helmet-async';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       <BrowserRouter>
         <div className="min-h-screen bg-gray-50">
           <Navbar />
+          <HelmetProvider>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
@@ -41,6 +43,7 @@ function App() {
             } 
           />
           </Routes>
+          </HelmetProvider>
           <Footer />
           <Toaster position="top-right" />
         </div>
