@@ -10,7 +10,8 @@ import {
   LayoutDashboard,
   LogOut,
   LogIn,
-  UserPlus
+  UserPlus,
+  Activity // New icon for API Usage
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -111,6 +112,9 @@ export default function Navbar() {
                 <>
                   <NavLink to="/dashboard" icon={LayoutDashboard}>
                     Dashboard
+                  </NavLink>
+                  <NavLink to="/apiUsage" icon={Activity}>
+                    API Usage
                   </NavLink>
                   <div className="relative">
                     <button
@@ -223,6 +227,13 @@ export default function Navbar() {
                         onClick={() => setIsMenuOpen(false)}
                       >
                         Dashboard
+                      </NavLink>
+                      <NavLink 
+                        to="/apiUsage" 
+                        icon={Activity}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        API Usage
                       </NavLink>
                       <div className="border-t border-gray-100 my-2"></div>
                       <div className="px-4">

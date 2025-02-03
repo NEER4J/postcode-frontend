@@ -24,6 +24,10 @@ interface Profile {
   email: string;
   full_name: string;
   allowed_domains?: string[];
+  rate_limit: number;
+  request_count: number;
+  last_request_time: string;
+  api_key_generated_at: string;
 }
 
 interface ApiUsage {
@@ -90,8 +94,7 @@ export default function Dashboard() {
         .from('api_usage')
         .select('*')
         .eq('user_id', user?.id)
-        .order('timestamp', { ascending: false })
-        .limit(10);
+        .order('timestamp', { ascending: false });
 
       if (error) throw error;
       setApiUsage(data || []);
@@ -114,9 +117,10 @@ export default function Dashboard() {
       if (!response.ok) throw new Error('Failed to generate API key');
 
       const { apiKey } = await response.json();
+      const apiKeyGeneratedAt = new Date().toISOString();
       await supabase
         .from('profiles')
-        .update({ new_api_key: apiKey })
+        .update({ new_api_key: apiKey, api_key_generated_at: apiKeyGeneratedAt })
         .eq('id', user?.id);
 
       toast.success('API key generated successfully');
@@ -199,7 +203,7 @@ export default function Dashboard() {
           </div>
 
           {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <StatCard 
               icon={Search} 
               label="Total Requests" 
@@ -214,6 +218,11 @@ export default function Dashboard() {
               icon={Globe} 
               label="Allowed Domains" 
               value={profile?.allowed_domains?.length || 0}
+            />
+            <StatCard 
+              icon={Key} 
+              label="Rate Limit" 
+              value={profile?.rate_limit?.toString() || 'N/A'}
             />
           </div>
 
@@ -242,41 +251,56 @@ export default function Dashboard() {
                 </div>
 
                 <div className="border-t border-gray-100 pt-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0 mb-4 p-4 bg-white rounded-lg border border-gray-100">
-  <div className="flex items-start sm:items-center gap-3">
-    <Key className="text-gray-400 mt-1 sm:mt-0" size={20} />
-    <div className="min-w-0 flex-1">
-      <div className="text-sm text-gray-600 mb-1">API Key</div>
-      <div className="font-mono bg-gray-50 px-3 py-1.5 rounded-lg text-sm overflow-x-auto whitespace-nowrap">
-        {showApiKey ? profile.new_api_key : '•'.repeat(40)}
-      </div>
-    </div>
-  </div>
-  
-  <div className="flex items-center gap-2 mt-3 sm:mt-0 border-t sm:border-t-0 pt-3 sm:pt-0">
-    <button
-      onClick={() => setShowApiKey(!showApiKey)}
-      className="flex-1 sm:flex-none px-3 py-2 text-sm text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors"
-      title={showApiKey ? "Hide API Key" : "Show API Key"}
-    >
-      {showApiKey ? "Hide" : "Show"}
-    </button>
-    <button
-      onClick={copyApiKey}
-      className="flex-1 sm:flex-none px-3 py-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors"
-      title="Copy API Key"
-    >
-      <Copy size={20} className="mx-auto" />
-    </button>
-    <button
-      onClick={generateApiKey}
-      className="flex-1 sm:flex-none px-3 py-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors"
-      title="Regenerate API Key"
-    >
-      <RefreshCw size={20} className="mx-auto" />
-    </button>
-  </div>
-</div>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0 mb-4 p-4 bg-white rounded-lg border border-gray-100">
+                    <div className="flex items-start sm:items-center gap-3">
+                      <Key className="text-gray-400 mt-1 sm:mt-0" size={20} />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm text-gray-600 mb-1">API Key</div>
+                        <div className="font-mono bg-gray-50 px-3 py-1.5 rounded-lg text-sm overflow-x-auto whitespace-nowrap">
+                          {showApiKey ? profile.new_api_key : '•'.repeat(40)}
+                        </div>
+                        {profile.api_key_generated_at && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Generated on: {new Date(profile.api_key_generated_at).toLocaleString()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mt-3 sm:mt-0 border-t sm:border-t-0 pt-3 sm:pt-0">
+                      <button
+                        onClick={() => setShowApiKey(!showApiKey)}
+                        className="flex-1 sm:flex-none px-3 py-2 text-sm text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors"
+                        title={showApiKey ? "Hide API Key" : "Show API Key"}
+                      >
+                        {showApiKey ? "Hide" : "Show"}
+                      </button>
+                      <button
+                        onClick={copyApiKey}
+                        className="flex-1 sm:flex-none px-3 py-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors"
+                        title="Copy API Key"
+                      >
+                        <Copy size={20} className="mx-auto" />
+                      </button>
+                      {profile.new_api_key ? (
+                        <button
+                          onClick={generateApiKey}
+                          className="flex-1 sm:flex-none px-3 py-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors"
+                          title="Regenerate API Key"
+                        >
+                          <RefreshCw size={20} className="mx-auto" />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={generateApiKey}
+                          className="flex-1 sm:flex-none px-3 py-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors"
+                          title="Generate API Key"
+                        >
+                          Generate API Key
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="border-t border-gray-100 pt-6">
@@ -307,57 +331,6 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* API Usage Table */}
-          <DashboardCard>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Recent API Usage</h2>
-              <div className="text-sm text-gray-500">Last 10 requests</div>
-            </div>
-            
-            <div className="overflow-x-auto">
-              {apiUsage.length > 0 ? (
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-left border-b border-gray-100">
-                      <th className="py-3 px-4 text-gray-600 font-medium">Endpoint</th>
-                      <th className="py-3 px-4 text-gray-600 font-medium">Timestamp</th>
-                      <th className="py-3 px-4 text-gray-600 font-medium">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {apiUsage.map((usage, index) => (
-                      <tr 
-                        key={index} 
-                        className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="py-3 px-4 font-mono text-sm">{usage.endpoint}</td>
-                        <td className="py-3 px-4 text-gray-600">
-                          {new Date(usage.timestamp).toLocaleString()}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            usage.status === 'success' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {usage.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <div className="text-center py-12">
-                  <Search className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <p className="text-gray-500 mb-2">No API usage recorded yet</p>
-                  <p className="text-sm text-gray-400">
-                    Try using the Postcode Search above to see your requests here
-                  </p>
-                </div>
-              )}
-            </div>
-          </DashboardCard>
         </div>
       </div>
     </div>

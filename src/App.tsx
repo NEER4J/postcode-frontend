@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import ApiUsageGraph from './pages/ApiUsageGraph';
 import UserManagement from './pages/UserManagement';
 import Documentation from './pages/Documentation';
 import { AuthProvider } from './contexts/AuthContext';
@@ -26,6 +27,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/documentation" element={<Documentation />} />
             <Route path="/UserManagement" element={<UserManagement />} />
+            <Route path="/ApiUsage" element={<ApiUsageGraph />} />
             <Route
               path="/dashboard"
               element={

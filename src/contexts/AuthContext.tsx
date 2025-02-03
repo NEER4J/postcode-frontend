@@ -9,6 +9,7 @@ interface UserProfile {
   role: string;
   email: string;
   full_name: string;
+  rate_limit: number;
 }
 
 interface AuthContextType {
@@ -96,6 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               email,
               full_name: fullName,
               role: 'user', // Default role for new users
+              rate_limit: 5  // Adding default rate limit of 5
             }
           ])
           .select()
